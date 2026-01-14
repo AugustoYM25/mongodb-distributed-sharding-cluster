@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # --- Config Servers (Meta-dados) ---
+  cfg-1:
+    image: mongo:latest
+    container_name: cfg-1
+    command: mongod --configsvr --replSet rs-config --port 27017 --bind_ip_all
+    networks: [mongo-net]
+  cfg-2:
+    image: mongo:latest
+    container_name: cfg-2
+    command: mongod --configsvr --replSet rs-config --port 27017 --bind_ip_all
+    networks: [mongo-net]
+  cfg-3:
+    image: mongo:latest
+    container_name: cfg-3
+    command: mongod --configsvr --replSet rs-config --port 27017 --bind_ip_all
+    networks: [mongo-net]
+
+  # --- Shard 01 ---
+  sh1-1:
+    image: mongo:latest
+    container_name: sh1-1
+    command: mongod --shardsvr --replSet rs-shard1 --port 27017 --bind_ip_all
+    networks: [mongo-net]
+  sh1-2:
+    image: mongo:latest
+    container_name: sh1-2
+    command: mongod --shardsvr --replSet rs-shard1 --port 27017 --bind_ip_all
+    networks: [mongo-net]
+  sh1-3:
+    image: mongo:latest
+    container_name: sh1-3
+    command: mongod --shardsvr --replSet rs-shard1 --port 27017 --bind_ip_all
+    networks: [mongo-net]
+
+  # --- Shard 02 ---
+  sh2-1:
+    image: mongo:latest
+    container_name: sh2-1
+    command: mongod --shardsvr --replSet rs-shard2 --port 27017 --bind_ip_all
+    networks: [mongo-net]
+  sh2-2:
+    image: mongo:latest
+    container_name: sh2-2
+    command: mongod --shardsvr --replSet rs-shard2 --port 27017 --bind_ip_all
+    networks: [mongo-net]
+  sh2-3:
+    image: mongo:latest
+    container_name: sh2-3
+    command: mongod --shardsvr --replSet rs-shard2 --port 27017 --bind_ip_all
+    networks: [mongo-net]
+
+  # --- Mongos (Router) ---
+  mongos:
+    image: mongo:latest
+    container_name: mongos
+    
+    command: mongos --configdb rs-config/cfg-1:27017,cfg-2:27017,cfg-3:27017 --bind_ip_all --port 27017
+    ports:
+      - "27020:27017"
+    networks: [mongo-net]
+    depends_on: [cfg-1, cfg-2, cfg-3]
+
+networks:
+  mongo-net:
+    driver: bridge
